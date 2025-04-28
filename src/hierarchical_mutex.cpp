@@ -1,39 +1,56 @@
 #include <iostream>
 #include <hierarchical_mutex.h>
 #include <chrono> 
-#include <thread>:w
+#include <thread>
 
 HierarchicalMutex mutex_high(10);
-HierarchicalMutex mutex_medium(5);
 HierarchicalMutex mutex_low(3);
 
-int slow_func1()
+void test_basic1()
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    return 10;
+    std::lock_guard<HierarchicalMutex> lck(mutex_high);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-int slow_func2()
+void test_basic2()
 {
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-    return 5;
+    std::lock_guard<HierarchicalMutex> lck(mutex_low);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
 }
 
-int low_level_func()
+void test_lock_high_to_low()
 {
+    std::lock_guard<HierarchicalMutex> lck(mutex_high);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
     std::lock_guard<HierarchicalMutex> lock(mutex_low);
-    return slow_func1();
 }
 
-int high_level_func()
+void test_lock_low_to_high()
 {
-    std::lock_guard<HierarchicalMutex> lock(mutex_high);
-
+    try
+    {
+        std::lock_guard<HierarchicalMutex> lck(mutex_low);
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        std::lock_guard<HierarchicalMutex> lock(mutex_high);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+    }
 }
-
 
 
 int main()
 {
+    std::thread t1(test_basic1);
+    t1.join();
 
+    std::thread t2(test_basic2);
+    t2.join();
+
+    std::thread t3(test_lock_high_to_low);
+    t3.join();
+
+    std::thread t4(test_lock_low_to_high);
+    t4.join();
 }
