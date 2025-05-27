@@ -1,7 +1,10 @@
 add_executable(threadsafe_stack threadsafe_stack.cpp)
 add_executable(hierarchical_mutex hierarchical_mutex.cpp)
 add_executable(threadsafe_queue threadsafe_queue.cpp)
+add_executable(spmc_lockfree spmc_lockfree.cpp)
 
 target_include_directories(threadsafe_stack PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(hierarchical_mutex PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_include_directories(threadsafe_queue PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_include_directories(spmc_lockfree PRIVATE ${CMAKE_SOURCE_DIR}/include)
+target_link_libraries(spmc_lockfree PRIVATE atomic)
